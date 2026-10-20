@@ -24,40 +24,46 @@ app.use(function (req, res, next) {
 });
 app.use(express.static("public"));
 
-function loadTires() {
-  try {
-    let tire = JSON.parse(fs.readFileSync("data.json", "utf8"));
+//--- Database (MongoDB) ---//
+const { MongoClient } = 
+require("mongodb");
+const client = new
+MongoClient(process.env.MONGODB_URI);
+let store;
 
-    for (let i = 0; i < tire.length; i++) {
-      if (!tire[i].id) {
-        tire[i].id = Date.now() + i;
-      }
+let inventory = [];
+let neededTires = [];
+
+async function loadList(name, fileName) {
+   let box = await store.findOne({ _id: name });
+    if (box) {
+      return box.items
     }
-    return tire;
-  } catch (error) {
-    return [];
-  }
+
+    let items = [];
+    try {
+      items = JSON.parse(fs.readFileSync(fileName, "utf8"));
+    } catch(error) {
+      items = [];
+    }
+    await store.replaceOne({ _id: name }, { _id:name, items: items }, {upsert: true });
+    console.log("Copied", items.length, "items from", fileName, "into MongoDB");
+    return items;
+}
+function saveList (name, items) {
+  store.replaceOne({ _id: name}, { _id: name, items: items }, { upsert: true })
+   .catch(function (error) {
+    console.log("Save failes:", error.message);
+   });
 }
 
-function saveTires() {
-  fs.writeFileSync("data.json", JSON.stringify(inventory, null, 2));
+function saveTires () {
+  saveList("inventory", inventory);
+}
+function saveNeeded () {
+  saveList("needed", neededTires);
 }
 
-function loadNeeded () {
- try {
-  return JSON.parse(fs.readFileSync("needed.json", "utf8"));
- } catch(error) {
-  return [];
- }
-}
-
-function saveNeeded() {
-  fs.writeFileSync("needed.json", JSON.stringify(neededTires, null, 2));
-}
-
-let inventory = loadTires();
-saveTires();
-let neededTires = loadNeeded();
 
 app.get("/", function (req, res) {
   res.send("Hello from my tire server!");
@@ -174,6 +180,18 @@ app.post("/api/needed", function (req, res) {
   res.json(tire);
 });
 
-app.listen(3000, function () {
-  console.log("Server is running on http://localhost:3000");
-});
+async function start() {
+  await client.connect();
+  store = 
+ client.db("tireExpress").collection("store");
+ console.log("Connected to MongoDB 🍃");
+
+ inventory = await loadList ("inventory", "data.json");
+ neededTires = await loadList("needed", "needed.json");
+
+ let port = process.env.PORT || 3000;
+ app.listen(port, function() {
+   console.log("Server is running on http://localhost:" + port);
+ });
+}
+start();
