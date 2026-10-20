@@ -1,27 +1,76 @@
 const express = require("express");
-const fs = require("fs")
+const fs = require("fs");
+const crypto = require("crypto");
+
 const app = express();
 
 app.use(express.json());
-// 💂 Login guard: runs before EVERY request
-app.use(function (req, res, next) {
-  // What the browser sent (hidden inside the "authorization" header)
-  let header = req.headers.authorization || "";
-  let encoded = header.split(" ")[1] || "";
-  let decoded = Buffer.from(encoded, "base64").toString();
-  let user = decoded.split(":")[0];
-  let password = decoded.split(":")[1];
+app.use(express.urlencoded({ extended: false }));
+app.set("trust proxy", 1);
 
-  // Correct? Let them in
-  if (user === process.env.APP_USER && password === process.env.APP_PASSWORD) {
+const WEEK = 7 * 24 * 60 * 60 * 1000;
+
+function makeTicket() {
+  let expires = Date.now() + WEEK;
+  let signature = crypto.createHmac("sha256", process.env.SESSION_SECRET).update(String(expires)).digest("hex");
+
+  return expires + "." + signature
+}
+
+function ticketIsValid(ticket) {
+  if(!ticket) return false;
+  let parts = ticket.split(".");
+  let expires = Number(parts[0]);
+  let signature = parts[1] || "";
+  let expected = crypto.createHmac("sha256", process.env.SESSION_SECRET).update(String(expires)).digest("hex");
+
+  return signature === expected && Date.now() < expires;
+}
+
+function readTicket(req) {
+  let cookies = (req.headers.cookie || "").split(";");
+   for (let cookie of cookies) {
+    let parts = cookie.trim().split("=");
+    if (parts[0] === "ticket") return parts[1];
+   }
+   return null;
+}
+
+app.get("/login", function(req, res) {
+  res.sendFile(__dirname + "/views/login.html");
+});
+
+app.post("/login", function(req, res) {
+  if (req.body.username === process.env.APP_USER && req.body.password === process.env.APP_PASSWORD) {
+    res.cookie("ticket", makeTicket(), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: req.secure,
+      maxAge: WEEK
+    });
+    res.redirect("/");
+    return;
+  }
+  res.redirect("/login?error=1");
+});
+
+app.get("/logout", function (req, res) {
+  res.clearCookie("ticket");
+  res.redirect("/login");
+})
+
+app.use(function (req, res, next) {
+  if (ticketIsValid(readTicket(req))) {
     next();
     return;
   }
-
-  // Wrong or missing: ask the browser to show the login popup
-  res.set("WWW-Authenticate", 'Basic realm="Tire Express"');
-  res.status(401).send("Login required");
+  if (req.path.startsWith("/api/")) {
+    res.status(401).json({ error: "Login required" });
+    return
+  }
+  res.redirect("/login");
 });
+
 app.use(express.static("public"));
 
 //--- Database (MongoDB) ---//

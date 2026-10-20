@@ -20,6 +20,12 @@ let todayDate = document.createElement("h3");
 todayDate.className = "date";
 intro.append(todayDate);
 
+let logoutBtn = document.createElement("a");
+logoutBtn.className = "logout-btn";
+logoutBtn.href = "/logout";
+logoutBtn.textContent = "Log out";
+intro.append(logoutBtn);
+
 function renderDate() {
   let dayName = dayOfTheWeek[currentDate.getDay()];
   let dateString = currentDate.toLocaleDateString();
@@ -571,16 +577,16 @@ function renderNeeded(tire) {
   neededDeleteBtn.value = "Delete"
   li.append(neededDeleteBtn);
 
-  neededDeleteBtn.addEventListener("click", function(){
+  neededDeleteBtn.addEventListener("click", function () {
     fetch("/api/needed/" + tire.id, {
       method: "DELETE"
     })
-     .then(function () {
-       neededTires = neededTires.filter(function (item) {
-         return item.id !== tire.id;
-       });
-       li.remove();
-     });
+      .then(function () {
+        neededTires = neededTires.filter(function (item) {
+          return item.id !== tire.id;
+        });
+        li.remove();
+      });
   });
 
 
