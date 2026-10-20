@@ -565,6 +565,25 @@ function renderNeeded(tire) {
   Number of Tires: ${tire.number} |
   Condition: ${tire.type}`;
 
+  let neededDeleteBtn = document.createElement("input");
+  neededDeleteBtn.className = "needed-delete-btn";
+  neededDeleteBtn.type = "button";
+  neededDeleteBtn.value = "Delete"
+  li.append(neededDeleteBtn);
+
+  neededDeleteBtn.addEventListener("click", function(){
+    fetch("/api/needed/" + tire.id, {
+      method: "DELETE"
+    })
+     .then(function () {
+       neededTires = neededTires.filter(function (item) {
+         return item.id !== tire.id;
+       });
+       li.remove();
+     });
+  });
+
+
   neededList.append(li);
 }
 

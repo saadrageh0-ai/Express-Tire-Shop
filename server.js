@@ -3,7 +3,7 @@ const fs = require("fs")
 const app = express();
 
 app.use(express.json());
- // 💂 Login guard: runs before EVERY request
+// 💂 Login guard: runs before EVERY request
 app.use(function (req, res, next) {
   // What the browser sent (hidden inside the "authorization" header)
   let header = req.headers.authorization || "";
@@ -25,42 +25,42 @@ app.use(function (req, res, next) {
 app.use(express.static("public"));
 
 //--- Database (MongoDB) ---//
-const { MongoClient } = 
-require("mongodb");
+const { MongoClient } =
+  require("mongodb");
 const client = new
-MongoClient(process.env.MONGODB_URI);
+  MongoClient(process.env.MONGODB_URI);
 let store;
 
 let inventory = [];
 let neededTires = [];
 
 async function loadList(name, fileName) {
-   let box = await store.findOne({ _id: name });
-    if (box) {
-      return box.items
-    }
+  let box = await store.findOne({ _id: name });
+  if (box) {
+    return box.items
+  }
 
-    let items = [];
-    try {
-      items = JSON.parse(fs.readFileSync(fileName, "utf8"));
-    } catch(error) {
-      items = [];
-    }
-    await store.replaceOne({ _id: name }, { _id:name, items: items }, {upsert: true });
-    console.log("Copied", items.length, "items from", fileName, "into MongoDB");
-    return items;
+  let items = [];
+  try {
+    items = JSON.parse(fs.readFileSync(fileName, "utf8"));
+  } catch (error) {
+    items = [];
+  }
+  await store.replaceOne({ _id: name }, { _id: name, items: items }, { upsert: true });
+  console.log("Copied", items.length, "items from", fileName, "into MongoDB");
+  return items;
 }
-function saveList (name, items) {
-  store.replaceOne({ _id: name}, { _id: name, items: items }, { upsert: true })
-   .catch(function (error) {
-    console.log("Save failes:", error.message);
-   });
+function saveList(name, items) {
+  store.replaceOne({ _id: name }, { _id: name, items: items }, { upsert: true })
+    .catch(function (error) {
+      console.log("Save failes:", error.message);
+    });
 }
 
-function saveTires () {
+function saveTires() {
   saveList("inventory", inventory);
 }
-function saveNeeded () {
+function saveNeeded() {
   saveList("needed", neededTires);
 }
 
@@ -144,8 +144,8 @@ app.post("/api/inventory/:id/sell", function (req, res) {
     return item.id === id;
   });
 
-  if(!tire) {
-    res.status(404).json({ error: "Tire not found"});
+  if (!tire) {
+    res.status(404).json({ error: "Tire not found" });
     return
   }
 
@@ -180,18 +180,31 @@ app.post("/api/needed", function (req, res) {
   res.json(tire);
 });
 
+// Delete a needed tire by its ID
+app.delete("/api/needed/:id", function (req, res) {
+  let id = Number(req.params.id);
+
+  neededTires = neededTires.filter(function (tire) {
+    return tire.id !== id;
+  });
+
+  saveNeeded();
+  console.log("Deleted needed:", id);
+  res.json({ ok: true });
+});
+
 async function start() {
   await client.connect();
-  store = 
- client.db("tireExpress").collection("store");
- console.log("Connected to MongoDB 🍃");
+  store =
+    client.db("tireExpress").collection("store");
+  console.log("Connected to MongoDB 🍃");
 
- inventory = await loadList ("inventory", "data.json");
- neededTires = await loadList("needed", "needed.json");
+  inventory = await loadList("inventory", "data.json");
+  neededTires = await loadList("needed", "needed.json");
 
- let port = process.env.PORT || 3000;
- app.listen(port, function() {
-   console.log("Server is running on http://localhost:" + port);
- });
+  let port = process.env.PORT || 3000;
+  app.listen(port, function () {
+    console.log("Server is running on http://localhost:" + port);
+  });
 }
 start();
