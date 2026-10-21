@@ -1,0 +1,50 @@
+/* 🎨 Colors for the whole app, in one place */
+:root {
+  --dark: #1f2329;      /* charcoal, like a tire */
+  --accent: #f28c28;    /* orange */
+  --light: #f5f6f8;     /* light gray background */
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: var(--light);
+  color: var(--dark);
+  margin: 0;
+  padding: 16px;
+}
+
+.title {
+  color: var(--accent);
+}
+
+.intro {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+}
+
+.title {
+    grid-row: 1 / 3;
+}
+
+.date, .logout-btn {
+  grid-column: 2;
+  justify-self: end;
+}
+
+.logout-btn {
+  text-decoration: none;
+  color: var(--dark);
+  background-color: var(--light);
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;    /* ✅ animates in AND out */
+}
+
+.logout-btn:hover {
+  color: var(--light);
+  background-color: var(--dark);
+}
+
+.menu {
+    display: inline;
+}
