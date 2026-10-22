@@ -9,7 +9,7 @@ document.body.append(intro);
 
 let title = document.createElement("h1");
 title.className = "title";
-title.textContent = "Tire Express Inventory";
+title.textContent = "Express Tire Shop Inventory";
 intro.append(title);
 
 let dayOfTheWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -482,6 +482,10 @@ sellBtn.type = "button";
 sellBtn.value = "Sell";
 sellSection.append(sellBtn);
 
+let sellMsg = document.createElement("p");
+sellMsg.className = "sell-msg";
+sellSection.append(sellMsg);
+
 sellBtn.addEventListener("click", function () {
   let id = selectType.value;
   let amount = Number(sellInput.value);
@@ -514,13 +518,11 @@ sellBtn.addEventListener("click", function () {
       updatedSellOption();
     })
 
-  let sellMsg = document.createElement("p");
   sellMsg.textContent = "Inventory Was Updated";
 
   setTimeout(function () {
     sellMsg.textContent = "";
   }, 3000)
-  sellSection.append(sellMsg);
 });
 
 
