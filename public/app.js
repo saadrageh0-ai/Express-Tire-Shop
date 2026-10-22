@@ -236,6 +236,9 @@ function renderItem(list) {
     let chip = document.createElement("span");
     chip.className = "chip";
     chip.textContent = text;
+     if (text === list.condition) {
+      chip.classList.add("chip-" + list.condition.toLowerCase());
+    }
     details.append(chip);
   }
 

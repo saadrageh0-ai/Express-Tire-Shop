@@ -382,6 +382,18 @@ h1, h2, h3 {
   font-weight: 600;
 }
 
+/* New tires: fresh green 🟢 */
+.chip-new {
+  background-color: #d3f4e0;
+  color: #1e7a46;
+}
+
+/* Used tires: calm amber 🟠 */
+.chip-used {
+  background-color: #fdecc8;
+  color: #8a5a00;
+}
+
 .tire-price {
   margin-bottom: 12px;
   color: var(--accent);
