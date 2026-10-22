@@ -224,19 +224,38 @@ function renderItem(list) {
     addPrice.hidden = addType.value === usedTires.textContent;
   });
 
-  itemsList.textContent = `
-   Name of the Brand: ${list.brand} |
-   Size Number: ${list.size} |
-   Number of Tires: ${list.quantity} |
-   Condition of Tires: ${list.condition}`;
+  let name = document.createElement("div");
+  name.className = "tire-name";
+  name.textContent = list.brand;
 
-  if (list.condition === "New") {
-    itemsList.textContent += ` | Price of Tire: $${list.price}`;
+  let details = document.createElement("div");
+  details.className = "tire-details";
+
+  let chips = [list.size, list.quantity + " tires", list.condition];
+  for (let text of chips) {
+    let chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = text;
+    details.append(chip);
   }
 
+  itemsList.append(name);
+  itemsList.append(details);
+
+  if (list.condition === "New") {
+    let price = document.createElement("div");
+    price.className = "tire-price";
+    price.textContent = `$${list.price}`;
+    itemsList.append(price);
+  }
+
+  let buttons = document.createElement("div");
+  buttons.className = "item-buttons";
+  buttons.append(deleteBtn);
+  buttons.append(editBtn);
+
   addList.append(itemsList);
-  itemsList.append(deleteBtn);
-  itemsList.append(editBtn);
+  itemsList.append(buttons);
 }
 
 addBtn.addEventListener("click", function () {
