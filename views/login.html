@@ -6,15 +6,21 @@
         <title>Log in - Express Tire Shop</title>
 
         <!-- The styles live here (not in style.css), because style.css is
-             behind the login guard and can't load before you log in. -->
+             behind the login guard and can't load before you log in.
+             Colors match the dark theme in public/style.css. -->
         <style>
             :root {
-                --dark: #1f2329;
-                --accent: #f28c28;
-                --light: #f5f6f8;
-                --border: #dde1e6;
-                --muted: #6b7280;
-                --danger: #c0392b;
+                color-scheme: dark;
+
+                --bg: #0f1115;
+                --panel: #181b21;
+                --panel-2: #20242c;
+                --border: #2c313a;
+                --text: #e8eaed;
+                --muted: #9aa0a8;
+                --accent: #ffb020;
+                --accent-text: #111;
+                --danger: #ff5c5c;
             }
 
             * {
@@ -28,19 +34,19 @@
                 align-items: center;
                 justify-content: center;
                 padding: 16px;
-                font-family: system-ui, sans-serif;
-                color: var(--dark);
-                background: var(--light);
+                font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+                font-size: 16px;
+                color: var(--text);
+                background: var(--bg);
             }
 
             .card {
                 width: 100%;
                 max-width: 380px;
-                padding: 32px 28px;
-                background: white;
+                padding: 32px 24px;
+                background: var(--panel);
+                border: 1px solid var(--border);
                 border-radius: 16px;
-                border-top: 5px solid var(--accent);
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
                 text-align: center;
                 animation: fadeIn 0.4s ease;
             }
@@ -48,19 +54,19 @@
             .logo {
                 width: 64px;
                 height: 64px;
-                margin: 0 auto 12px;
+                margin: 0 auto 14px;
                 display: grid;
                 place-items: center;
                 border-radius: 50%;
                 background: var(--accent);
                 font-size: 32px;
-                box-shadow: 0 4px 12px rgba(242, 140, 40, 0.4);
             }
 
             h1 {
                 margin: 0;
-                font-size: 1.7rem;
-                color: var(--accent);
+                font-size: 1.5rem;
+                font-weight: 800;
+                color: var(--text);
             }
 
             .subtitle {
@@ -74,46 +80,59 @@
                 gap: 12px;
             }
 
+            /* font-size 16px stops iPhones from zooming in */
             input {
                 width: 100%;
-                padding: 12px 14px;
-                border: 2px solid var(--border);
+                min-height: 48px;
+                padding: 0 14px;
+                border: 1px solid var(--border);
                 border-radius: 10px;
+                background: var(--panel-2);
+                color: var(--text);
                 font: inherit;
-                font-size: 1rem;
+                font-size: 16px;
                 transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            input::placeholder {
+                color: var(--muted);
             }
 
             input:focus {
                 outline: none;
                 border-color: var(--accent);
-                box-shadow: 0 0 0 3px rgba(242, 140, 40, 0.25);
+                box-shadow: 0 0 0 3px rgba(255, 176, 32, 0.25);
             }
 
             button {
                 margin-top: 6px;
-                padding: 13px;
+                min-height: 48px;
                 border: none;
                 border-radius: 10px;
                 background: var(--accent);
-                color: white;
+                color: var(--accent-text);
                 font: inherit;
-                font-size: 1.1rem;
-                font-weight: 600;
+                font-size: 1.05rem;
+                font-weight: 700;
                 cursor: pointer;
-                transition: background-color 0.2s ease, transform 0.2s ease;
             }
 
-            button:hover {
-                background: var(--dark);
-                transform: translateY(-2px);
+            button:active {
+                transform: scale(0.98);
+                filter: brightness(0.9);
+            }
+
+            @media (hover: hover) {
+                button:hover {
+                    filter: brightness(1.1);
+                }
             }
 
             .error {
                 margin: 16px 0 0;
                 padding: 10px 12px;
                 border-radius: 10px;
-                background: #fdecea;
+                background: rgba(255, 92, 92, 0.12);
                 color: var(--danger);
                 font-weight: 600;
                 animation: shake 0.4s ease;
