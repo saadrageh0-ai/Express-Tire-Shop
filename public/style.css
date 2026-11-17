@@ -1,22 +1,25 @@
 /* =========================================================
-   Express Tire Shop — styles
+   Express Tire Shop — dark theme, made for phones first
    ========================================================= */
 
 /*--- 🎨 Colors and sizes for the whole app, in one place ---*/
 :root {
-  --dark: #1f2329;        /* charcoal, like a tire */
-  --accent: #f28c28;      /* orange */
-  --light: #f5f6f8;       /* page background */
-  --panel: #ffffff;       /* boxes and cards */
-  --border: #dde1e6;      /* soft lines */
-  --muted: #6b7280;       /* secondary text */
-  --chip: #eef0f3;        /* chip background */
-  --danger: #c0392b;      /* delete */
-  --edit: #28465a;        /* edit */
+  color-scheme: dark;     /* makes the phone's own controls dark too */
 
-  --radius: 12px;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 8px 18px rgba(0, 0, 0, 0.14);
+  --bg: #0f1115;          /* page background, almost black */
+  --panel: #181b21;       /* boxes */
+  --panel-2: #20242c;     /* cards and inputs inside boxes */
+  --border: #2c313a;      /* soft lines */
+  --text: #e8eaed;        /* main text */
+  --muted: #9aa0a8;       /* secondary text */
+  --accent: #ffb020;      /* amber, the one bright color */
+  --accent-text: #111;    /* text on top of amber */
+  --danger: #ff5c5c;      /* delete */
+  --new: #3ddc84;         /* New tires */
+  --used: #c7a6ff;        /* Used tires */
+
+  --radius: 14px;
+  --tap: 48px;            /* smallest size for anything you tap */
 }
 
 /*--- Page ---*/
@@ -25,13 +28,15 @@
 }
 
 body {
-  font-family: system-ui, sans-serif;
-  background: var(--light);
-  color: var(--dark);
-  line-height: 1.5;
   margin: 0 auto;
-  padding: 16px;
-  max-width: 900px;
+  padding: 0 16px 32px;
+  max-width: 640px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
 
   /* Order on screen: header, menu, the open form, then the inventory */
   display: flex;
@@ -39,152 +44,170 @@ body {
   gap: 16px;
 }
 
-.intro            { order: 1; }
-.menu             { order: 2; }
+.intro             { order: 1; }
+.menu              { order: 2; }
 .add-section,
 .search-section,
 .sell-section,
-.needed-section   { order: 3; }
+.needed-section    { order: 3; }
 .inventory-section { order: 4; }
 
 h1, h2, h3 {
   line-height: 1.2;
 }
 
-/*--- Header ---*/
+/*--- Header (stays at the top when you scroll) ---*/
 .intro {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 4px 16px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--border);
+  gap: 4px 12px;
+  margin: 0 -16px;
+  padding: 14px 16px 12px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
 }
 
 .title {
-  grid-row: 1 / 3;
+  grid-column: 1;
+  grid-row: 1;
   margin: 0;
-  font-size: 2rem;
-  color: var(--accent);
-}
-
-.date,
-.logout-btn {
-  grid-column: 2;
-  justify-self: end;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .date {
+  grid-column: 1 / -1;
+  grid-row: 2;
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 500;
   color: var(--muted);
 }
 
 .logout-btn {
-  text-decoration: none;
-  color: var(--dark);
-  border: 2px solid var(--dark);
+  grid-column: 2;
+  grid-row: 1;
   padding: 6px 14px;
+  border: 1px solid var(--border);
   border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.85rem;
   font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
+  text-decoration: none;
 }
 
-.logout-btn:hover {
-  color: white;
-  background-color: var(--dark);
+.logout-btn:active {
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+/* Location picker: big and easy to tap */
+.location-select {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin-top: 8px;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--accent);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.location-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /*--- Menu ---*/
 .menu {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 /* The round + button */
 .plus-btn {
+  flex-shrink: 0;
   width: 52px;
   height: 52px;
   border: none;
   border-radius: 50%;
   background: var(--accent);
-  color: white;
-  font-size: 30px;
+  color: var(--accent-text);
+  font-size: 28px;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(242, 140, 40, 0.4);
-  transition: transform 0.3s ease, background 0.3s ease;
-}
-
-.plus-btn:hover {
-  background: var(--dark);
+  transition: transform 0.25s ease;
 }
 
 /* When the menu is open: + turns into × */
 .menu:has(.menu-choices:not([hidden])) .plus-btn {
   transform: rotate(45deg);
-  background: var(--dark);
+  background: var(--panel-2);
+  color: var(--text);
 }
 
-/* The row of choices */
+/* The 4 choices: Add, Search, Sell, Need — side by side, same size */
 .menu-choices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  animation: slideIn 0.3s ease;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  animation: slideIn 0.2s ease;
 }
 
 .menu-choices[hidden] {
   display: none;
 }
 
-/* Each choice: Add, Search, Sell, Need */
 .menu-choices input {
-  padding: 10px 18px;
-  border: 2px solid var(--dark);
-  border-radius: 999px;
+  min-height: var(--tap);
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
   background: var(--panel);
-  color: var(--dark);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
   font-weight: 600;
-  font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.menu-choices input:hover {
-  background: var(--dark);
-  color: white;
-  transform: translateY(-2px);
+.menu-choices input:active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-15px); }
+  from { opacity: 0; transform: translateX(-10px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
 /*--- Every box: Inventory, Add, Search, Sell, Need ---*/
-/* Each one has its own color, used for its stripe, title, focus and buttons */
-.inventory-section { --focus: var(--accent); }  /* orange */
-.add-section       { --focus: #2a58d6; }        /* blue   */
-.search-section    { --focus: #7c4dff; }        /* purple */
-.sell-section      { --focus: #2e9e5b; }        /* green  */
-.needed-section    { --focus: #d6336c; }        /* pink   */
-
 .inventory-section,
 .add-section,
 .search-section,
 .sell-section,
 .needed-section {
-  background-color: var(--panel);
-  padding: 20px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  border-top: 4px solid var(--focus);
-  box-shadow: var(--shadow);
 }
 
+/* The open form gets a thin amber line so you see which one is open */
 .add-section,
 .search-section,
 .sell-section,
@@ -192,7 +215,8 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  animation: fadeIn 0.25s ease;
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  animation: fadeIn 0.2s ease;
 }
 
 /* Keep hidden boxes really hidden */
@@ -201,6 +225,13 @@ h1, h2, h3 {
 .sell-section[hidden],
 .needed-section[hidden] {
   display: none;
+}
+
+/* The inventory box has no frame, so the cards stand out */
+.inventory-section {
+  padding: 0;
+  background: none;
+  border: none;
 }
 
 @keyframes fadeIn {
@@ -214,12 +245,23 @@ h1, h2, h3 {
 .seach-title,
 .sell-title,
 .needed-tires-title {
-  margin: 0 0 6px;
-  font-size: 1.4rem;
-  color: var(--focus);
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.inventory {
+  margin-bottom: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /*--- Inputs (all boxes) ---*/
+/* font-size 16px stops iPhones from zooming in when you tap a box */
 .add-section input,
 .add-section select,
 .search-section input,
@@ -228,14 +270,22 @@ h1, h2, h3 {
 .needed-section input,
 .needed-section select {
   width: 100%;
-  padding: 11px 12px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  background: var(--panel);
-  color: var(--dark);
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--text);
   font: inherit;
-  font-size: 1rem;
+  font-size: 16px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.add-section input::placeholder,
+.search-section input::placeholder,
+.sell-section input::placeholder,
+.needed-section input::placeholder {
+  color: var(--muted);
 }
 
 .add-section input:focus,
@@ -246,8 +296,8 @@ h1, h2, h3 {
 .needed-section input:focus,
 .needed-section select:focus {
   outline: none;
-  border-color: var(--focus);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 25%, transparent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 /* Hidden price field (used tires) stays hidden */
@@ -255,67 +305,24 @@ h1, h2, h3 {
   display: none;
 }
 
-/*--- Soft dropdowns (Chrome / Edge; other browsers show the normal one) ---*/
-.add-section select,
-.add-section select::picker(select),
-.sell-section select,
-.sell-section select::picker(select),
-.needed-section select,
-.needed-section select::picker(select) {
-  appearance: base-select;
-}
-
-.add-section select::picker(select),
-.sell-section select::picker(select),
-.needed-section select::picker(select) {
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  padding: 4px;
-  margin-top: 4px;
-  box-shadow: var(--shadow-hover);
-}
-
-.add-section option,
-.sell-section option,
-.needed-section option {
-  padding: 8px 10px;
-  border-radius: 6px;
-}
-
-.add-section option:hover,
-.sell-section option:hover,
-.needed-section option:hover {
-  background-color: var(--chip);
-}
-
-.add-section option:checked,
-.sell-section option:checked,
-.needed-section option:checked {
-  background-color: var(--focus);
-  color: white;
-}
-
 /*--- Main buttons: Add, Sell, Add needed ---*/
 .add-section .add,
 .sell-section .sell-btn,
 .needed-section .needed-btn {
   margin-top: 4px;
-  padding: 12px;
   border: none;
-  border-radius: 8px;
-  background-color: var(--focus);
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 1.05rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.add-section .add:hover,
-.sell-section .sell-btn:hover,
-.needed-section .needed-btn:hover {
-  background-color: var(--dark);
-  transform: translateY(-2px);
+.add-section .add:active,
+.sell-section .sell-btn:active,
+.needed-section .needed-btn:active {
+  transform: scale(0.98);
+  filter: brightness(0.9);
 }
 
 /*--- Messages ---*/
@@ -323,9 +330,10 @@ h1, h2, h3 {
 .sell-msg {
   margin: 0;
   padding: 10px 12px;
-  border-radius: 8px;
-  background-color: color-mix(in srgb, var(--focus) 10%, white);
-  color: var(--focus);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--new) 12%, transparent);
+  color: var(--new);
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
@@ -337,127 +345,121 @@ h1, h2, h3 {
 /*--- Inventory cards ---*/
 .add-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
 .items-list {
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  background-color: var(--panel);
-  border: 2px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  font-size: 1rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.items-list:hover {
-  transform: translateY(-3px);
-  border-color: var(--focus);
-  box-shadow: var(--shadow-hover);
-}
-
+/* Name on the left, price on the right */
 .tire-name {
-  font-size: 1.35rem;
+  grid-column: 1;
+  font-size: 1.15rem;
   font-weight: 700;
-}
-
-.tire-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 8px 0 10px;
-}
-
-.chip {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background-color: var(--chip);
-  color: var(--dark);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-/* New tires: fresh green 🟢 */
-.chip-new {
-  background-color: #d3f4e0;
-  color: #1e7a46;
-}
-
-/* Used tires: calm amber 🟠 */
-.chip-used {
-  background-color: #fdecc8;
-  color: #8a5a00;
 }
 
 .tire-price {
-  margin-bottom: 12px;
+  grid-column: 2;
+  grid-row: 1;
   color: var(--accent);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
-/* Delete + Edit always at the bottom of the card */
+.tire-details {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.chip-new {
+  background: color-mix(in srgb, var(--new) 15%, transparent);
+  color: var(--new);
+}
+
+.chip-used {
+  background: color-mix(in srgb, var(--used) 15%, transparent);
+  color: var(--used);
+}
+
+/* Delete + Edit along the bottom of the card */
 .item-buttons {
+  grid-column: 1 / -1;
   display: flex;
   gap: 8px;
-  margin-top: auto;
 }
 
 .edit-btn,
 .delete-btn {
   flex: 1;
   min-height: 44px;
-  padding: 10px 16px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  background: var(--panel);
-  color: var(--dark);
-  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.edit-btn:hover {
-  background-color: var(--edit);
-  border-color: var(--edit);
-  color: white;
+.delete-btn {
+  color: var(--danger);
 }
 
-.delete-btn:hover {
-  background-color: var(--danger);
+.edit-btn:active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.delete-btn:active {
+  background: var(--danger);
   border-color: var(--danger);
   color: white;
 }
 
-/*--- Search results ---*/
-.search-results {
+/*--- Search results and Needed list ---*/
+.search-results,
+.needed-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
-.search-results .list {
+.search-results .list,
+.needed-li {
   padding: 12px 14px;
-  background-color: var(--light);
-  border-left: 4px solid var(--focus);
-  border-radius: 8px;
-  font-weight: 500;
+  background: var(--panel-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  font-size: 0.95rem;
   line-height: 1.6;
-  transition: all 0.2s ease;
-}
-
-.search-results .list:hover {
-  transform: translateX(4px);
-  background-color: color-mix(in srgb, var(--focus) 8%, white);
 }
 
 .search-results .no-tire {
@@ -466,81 +468,68 @@ h1, h2, h3 {
   font-style: italic;
 }
 
-/*--- Needed tires list ---*/
-.needed-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
 .needed-li {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background-color: var(--light);
-  border-left: 4px solid var(--focus);
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.needed-li:hover {
-  transform: translateX(4px);
-  background-color: color-mix(in srgb, var(--focus) 8%, white);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
 }
 
 .needed-section .needed-delete-btn {
-  width: auto;
-  flex-shrink: 0;
-  padding: 8px 14px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
+  min-height: 40px;
+  border: 1px solid var(--border);
   background: var(--panel);
+  color: var(--danger);
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.needed-section .needed-delete-btn:hover {
-  background-color: var(--danger);
+.needed-section .needed-delete-btn:active {
+  background: var(--danger);
   border-color: var(--danger);
   color: white;
 }
 
-/*--- 📱 Phones ---*/
-@media (max-width: 600px) {
+/*--- 🖱️ Computers: hover effects (phones skip these) ---*/
+@media (hover: hover) {
+  .logout-btn:hover,
+  .menu-choices input:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .add-section .add:hover,
+  .sell-section .sell-btn:hover,
+  .needed-section .needed-btn:hover {
+    filter: brightness(1.1);
+  }
+
+  .items-list {
+    transition: border-color 0.2s ease;
+  }
+
+  .items-list:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  }
+
+  .edit-btn:hover {
+    border-color: var(--text);
+  }
+
+  .delete-btn:hover,
+  .needed-section .needed-delete-btn:hover {
+    border-color: var(--danger);
+  }
+}
+
+/*--- 💻 Bigger screens: two cards per row ---*/
+@media (min-width: 700px) {
   body {
-    padding: 12px;
-    gap: 12px;
-  }
-
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .inventory-section,
-  .add-section,
-  .search-section,
-  .sell-section,
-  .needed-section {
-    padding: 14px;
-  }
-
-  .menu-choices input {
-    padding: 10px 14px;
+    max-width: 900px;
   }
 
   .add-list {
-    grid-template-columns: 1fr;
-  }
-
-  .needed-li {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr 1fr;
   }
 }
