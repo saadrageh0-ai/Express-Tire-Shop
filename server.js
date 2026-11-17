@@ -18,7 +18,7 @@ function makeTicket() {
 }
 
 function ticketIsValid(ticket) {
-  if(!ticket) return false;
+  if (!ticket) return false;
   let parts = ticket.split(".");
   let expires = Number(parts[0]);
   let signature = parts[1] || "";
@@ -29,18 +29,18 @@ function ticketIsValid(ticket) {
 
 function readTicket(req) {
   let cookies = (req.headers.cookie || "").split(";");
-   for (let cookie of cookies) {
+  for (let cookie of cookies) {
     let parts = cookie.trim().split("=");
     if (parts[0] === "ticket") return parts[1];
-   }
-   return null;
+  }
+  return null;
 }
 
-app.get("/login", function(req, res) {
+app.get("/login", function (req, res) {
   res.sendFile(__dirname + "/views/login.html");
 });
 
-app.post("/login", function(req, res) {
+app.post("/login", function (req, res) {
   if (req.body.username === process.env.APP_USER && req.body.password === process.env.APP_PASSWORD) {
     res.cookie("ticket", makeTicket(), {
       httpOnly: true,
@@ -80,8 +80,16 @@ const client = new
   MongoClient(process.env.MONGODB_URI);
 let store;
 
-let inventory = [];
-let neededTires = [];
+let inventory = {
+  westMemphis: [],
+  marion: []
+};
+
+let neededTires = {
+  westMemphis: [],
+  marion: []
+};
+
 
 async function loadList(name, fileName) {
   let box = await store.findOne({ _id: name });
@@ -99,34 +107,46 @@ async function loadList(name, fileName) {
   console.log("Copied", items.length, "items from", fileName, "into MongoDB");
   return items;
 }
+
 function saveList(name, items) {
   store.replaceOne({ _id: name }, { _id: name, items: items }, { upsert: true })
     .catch(function (error) {
-      console.log("Save failes:", error.message);
+      console.log("Save failed:", error.message);
     });
 }
 
-function saveTires() {
-  saveList("inventory", inventory);
-}
-function saveNeeded() {
-  saveList("needed", neededTires);
+function saveTires(location) {
+  if (location === "westMemphis") {
+    saveList("inventory", inventory.westMemphis)
+  } else {
+    saveList("inventory-marion", inventory.marion)
+  }
 }
 
+function saveNeeded(location) {
+  if (location === "westMemphis") {
+    saveList("needed", neededTires.westMemphis)
+  } else {
+    saveList("needed-marion", neededTires.marion)
+  }
+}
 
 app.get("/", function (req, res) {
   res.send("Hello from my tire server!");
 });
 
-app.get("/api/inventory", function (req, res) {
-  res.json(inventory);
+app.get("/api/:location/inventory", function (req, res) {
+  let location = req.params.location;
+  res.json((inventory)[location]);
 });
 
-app.post("/api/inventory", function (req, res) {
+app.post("/api/:location/inventory", function (req, res) {
   let tire = req.body;
+  let location = req.params.location;
+  let shelf = inventory[location];
 
   // Look for a tire that's the same (everything except quantity)
-  let sameTire = inventory.find(function (item) {
+  let sameTire = shelf.find(function (item) {
     return item.brand.toLowerCase() === tire.brand.toLowerCase() &&
       item.size.toLowerCase() === tire.size.toLowerCase() &&
       item.condition === tire.condition &&
@@ -136,7 +156,7 @@ app.post("/api/inventory", function (req, res) {
   // Found one: just add to its quantity
   if (sameTire) {
     sameTire.quantity = sameTire.quantity + tire.quantity;
-    saveTires();
+    saveTires(location);
     console.log("Merged:", sameTire);
     res.json(sameTire);
     return;
@@ -144,28 +164,30 @@ app.post("/api/inventory", function (req, res) {
 
   // Not found: it's a new tire, so give it an ID and add it
   tire.id = Date.now();
-  inventory.push(tire);
-  saveTires();
+  shelf.push(tire);
+  saveTires(location);
   console.log("Added:", tire);
   res.json(tire);
 });
-app.delete("/api/inventory/:id", function (req, res) {
-  let id = Number(req.params.id);
 
-  inventory = inventory.filter(function (tire) {
+app.delete("/api/:location/inventory/:id", function (req, res) {
+  let id = Number(req.params.id);
+  let location = req.params.location;
+
+  inventory[location] = inventory[location].filter(function (tire) {
     return tire.id !== id
   });
 
-  saveTires();
+  saveTires(location);
   console.log("Deleted:", id);
   res.json({ ok: true });
 })
 
-app.put("/api/inventory/:id", function (req, res) {
-
+app.put("/api/:location/inventory/:id", function (req, res) {
   let id = Number(req.params.id);
+  let location = req.params.location;
 
-  let tire = inventory.find(function (item) {
+  let tire = inventory[location].find(function (item) {
     return item.id === id;
   });
 
@@ -180,16 +202,17 @@ app.put("/api/inventory/:id", function (req, res) {
   tire.condition = req.body.condition;
   tire.price = req.body.price;
 
-  saveTires();
+  saveTires(location);
   console.log("Edited:", tire);
   res.json(tire);
 });
 
-app.post("/api/inventory/:id/sell", function (req, res) {
+app.post("/api/:location/inventory/:id/sell", function (req, res) {
   let id = Number(req.params.id);
   let amount = Number(req.body.amount);
+  let location = req.params.location;
 
-  let tire = inventory.find(function (item) {
+  let tire = inventory[location].find(function (item) {
     return item.id === id;
   });
 
@@ -206,38 +229,41 @@ app.post("/api/inventory/:id/sell", function (req, res) {
   tire.quantity = tire.quantity - amount;
 
   if (tire.quantity === 0) {
-    inventory = inventory.filter(function (item) {
+    inventory[location] = inventory[location].filter(function (item) {
       return item.id !== id
     })
   }
 
-  saveTires();
+  saveTires(location);
   console.log("Sold:", amount, "of", id);
   res.json({ ok: true });
 })
 
-app.get("/api/needed", function (req, res) {
-  res.json(neededTires)
+app.get("/api/:location/needed", function (req, res) {
+  let location = req.params.location;
+  res.json(neededTires[location]);
 });
 
-app.post("/api/needed", function (req, res) {
+app.post("/api/:location/needed", function (req, res) {
+  let location = req.params.location;
   let tire = req.body;
   tire.id = Date.now();
-  neededTires.push(tire);
-  saveNeeded();
+  neededTires[location].push(tire);
+  saveNeeded(location);
   console.log("Needed:", tire);
   res.json(tire);
 });
 
 // Delete a needed tire by its ID
-app.delete("/api/needed/:id", function (req, res) {
+app.delete("/api/:location/needed/:id", function (req, res) {
   let id = Number(req.params.id);
+  let location = req.params.location;
 
-  neededTires = neededTires.filter(function (tire) {
+  neededTires[location] = neededTires[location].filter(function (tire) {
     return tire.id !== id;
   });
 
-  saveNeeded();
+  saveNeeded(location);
   console.log("Deleted needed:", id);
   res.json({ ok: true });
 });
@@ -248,8 +274,11 @@ async function start() {
     client.db("tireExpress").collection("store");
   console.log("Connected to MongoDB 🍃");
 
-  inventory = await loadList("inventory", "data.json");
-  neededTires = await loadList("needed", "needed.json");
+  inventory.westMemphis = await loadList("inventory", "data.json");
+  inventory.marion = await loadList("inventory-marion", "marion.json");
+
+  neededTires.westMemphis = await loadList("needed", "needed.json");
+  neededTires.marion = await loadList("needed-marion", "needed-marion.json");
 
   let port = process.env.PORT || 3000;
   app.listen(port, function () {

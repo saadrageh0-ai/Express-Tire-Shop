@@ -20,6 +20,27 @@ let todayDate = document.createElement("h3");
 todayDate.className = "date";
 intro.append(todayDate);
 
+let shopLocation = "westMemphis";
+
+let locationSelect = document.createElement("select");
+locationSelect.className = "location-select";
+intro.append(locationSelect);
+
+let wmOption = document.createElement("option");
+wmOption.value = "westMemphis";
+wmOption.textContent = "West Memphis";
+locationSelect.append(wmOption);
+
+let marionOption = document.createElement("option");
+marionOption.value = "marion";
+marionOption.textContent = "Marion";
+locationSelect.append(marionOption);
+
+locationSelect.addEventListener("change", function () {
+  shopLocation = locationSelect.value;
+  loadLists();
+})
+
 let logoutBtn = document.createElement("a");
 logoutBtn.className = "logout-btn";
 logoutBtn.href = "/logout";
@@ -193,7 +214,7 @@ function renderItem(list) {
   deleteBtn.value = "Delete";
 
   deleteBtn.addEventListener("click", function () {
-    fetch("/api/inventory/" + list.id, {
+    fetch("/api/" + shopLocation + "/inventory/" + list.id, {
       method: "DELETE"
     })
       .then(function () {
@@ -236,7 +257,7 @@ function renderItem(list) {
     let chip = document.createElement("span");
     chip.className = "chip";
     chip.textContent = text;
-     if (text === list.condition) {
+    if (text === list.condition) {
       chip.classList.add("chip-" + list.condition.toLowerCase());
     }
     details.append(chip);
@@ -298,13 +319,13 @@ addBtn.addEventListener("click", function () {
 
   if (editIndex === null) {
     inventory.push(list);
-    fetch("/api/inventory", {
+    fetch("/api/" + shopLocation + "/inventory", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(list)
     })
       .then(function () {
-        return fetch("/api/inventory");     // ask for the updated list
+        return fetch("/api/" + shopLocation + "/inventory");     // ask for the updated list
       })
       .then(function (response) {
         return response.json();
@@ -318,13 +339,13 @@ addBtn.addEventListener("click", function () {
         updatedSellOption();
       });
   } else {
-    fetch("/api/inventory/" + editIndex, {
+    fetch("/api/" + shopLocation + "/inventory/" + editIndex, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(list)
     })
       .then(function () {
-        return fetch("/api/inventory/");
+        return fetch("/api/" + shopLocation + "/inventory/");
       })
       .then(function (response) {
         return response.json();
@@ -495,7 +516,7 @@ sellBtn.addEventListener("click", function () {
 
   if (amount <= 0) return;
 
-  fetch("/api/inventory/" + id + "/sell", {
+  fetch("/api/" + shopLocation + "/inventory/" + id + "/sell", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ amount: amount })
@@ -505,7 +526,7 @@ sellBtn.addEventListener("click", function () {
       if (!response.ok) {
         alert("Not enough tires to sell");
       }
-      return fetch("/api/inventory")
+      return fetch("/api/" + shopLocation + "/inventory")
     })
 
     .then(function (response) {
@@ -602,7 +623,7 @@ function renderNeeded(tire) {
   li.append(neededDeleteBtn);
 
   neededDeleteBtn.addEventListener("click", function () {
-    fetch("/api/needed/" + tire.id, {
+    fetch("/api/" + shopLocation + "/needed/" + tire.id, {
       method: "DELETE"
     })
       .then(function () {
@@ -642,7 +663,7 @@ neededBtn.addEventListener("click", function () {
     return;
   }
 
-  fetch("/api/needed", {
+  fetch("/api/" + shopLocation + "/needed", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(neededTire)
@@ -661,25 +682,32 @@ neededBtn.addEventListener("click", function () {
   neededBrand.focus();
 });
 
-fetch("/api/needed")
-  .then(function (response) {
-    return response.json();
-  })
-  .then(function (tires) {
-    neededTires = tires;
-    for (let tires of neededTires) {
-      renderNeeded(tires);
-    }
-  })
+function loadLists() {
+  addList.textContent = "";
+  neededList.textContent = "";
 
-fetch("/api/inventory")
-  .then(function (response) {
-    return response.json();
-  })
-  .then(function (tires) {
-    inventory = tires;
-    for (let tire of inventory) {
-      renderItem(tire);
-    }
-    updatedSellOption();
-  });
+  fetch("/api/" + shopLocation + "/needed")
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (tires) {
+      neededTires = tires;
+      for (let tires of neededTires) {
+        renderNeeded(tires);
+      }
+    })
+
+  fetch("/api/" + shopLocation + "/inventory")
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (tires) {
+      inventory = tires;
+      for (let tire of inventory) {
+        renderItem(tire);
+      }
+      updatedSellOption();
+    });
+}
+
+loadLists();
