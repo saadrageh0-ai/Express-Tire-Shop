@@ -318,7 +318,6 @@ addBtn.addEventListener("click", function () {
   }
 
   if (editIndex === null) {
-    inventory.push(list);
     fetch("/api/" + shopLocation + "/inventory", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -361,9 +360,6 @@ addBtn.addEventListener("click", function () {
     editIndex = null;
     editItem = null;
   }
-
-  renderItem(list);
-  updatedSellOption();
 
   addMsg.textContent = `Brand: ${list.brand} | Size: ${list.size} | Number: ${list.quantity} | Condition: ${list.condition}`;
 
@@ -711,3 +707,29 @@ function loadLists() {
 }
 
 loadLists();
+//-- Keyboard: Enter adds, Up/Down move between inputs --//
+function setupKeyboard(fields, submitBtn) {
+  for (let field of fields) {
+    field.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        submitBtn.click();
+        return;
+      }
+
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      event.preventDefault();
+
+      let visible = fields.filter(function (f) { return !f.hidden; });
+      let pos = visible.indexOf(field);
+      let next = event.key === "ArrowDown" ? pos + 1 : pos - 1;
+
+      if (next >= 0 && next < visible.length) {
+        visible[next].focus();
+      }
+    });
+  }
+}
+
+setupKeyboard([addName, addSize, addQuantity, addType, addPrice], addBtn);
+setupKeyboard([neededBrand, neededSize, neededQuantity, neededType], neededBtn);

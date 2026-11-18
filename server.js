@@ -140,22 +140,33 @@ app.get("/api/:location/inventory", function (req, res) {
   res.json((inventory)[location]);
 });
 
+// Same brand + size + condition (ignoring upper/lower case and extra spaces) = same tire
+function findSameTire(shelf, tire, skipId) {
+  return shelf.find(function (item) {
+    return item.id !== skipId &&
+      String(item.brand).trim().toLowerCase() === String(tire.brand).trim().toLowerCase() &&
+      String(item.size).trim().toLowerCase() === String(tire.size).trim().toLowerCase() &&
+      item.condition === tire.condition;
+  });
+}
+
 app.post("/api/:location/inventory", function (req, res) {
   let tire = req.body;
   let location = req.params.location;
   let shelf = inventory[location];
 
-  // Look for a tire that's the same (everything except quantity)
-  let sameTire = shelf.find(function (item) {
-    return item.brand.toLowerCase() === tire.brand.toLowerCase() &&
-      item.size.toLowerCase() === tire.size.toLowerCase() &&
-      item.condition === tire.condition &&
-      item.price === tire.price;
-  });
+  tire.brand = String(tire.brand).trim();
+  tire.size = String(tire.size).trim();
+  tire.quantity = Number(tire.quantity);
 
-  // Found one: just add to its quantity
+  let sameTire = findSameTire(shelf, tire);
+
+  // Found one: add to its quantity and keep the latest price
   if (sameTire) {
-    sameTire.quantity = sameTire.quantity + tire.quantity;
+    sameTire.quantity = Number(sameTire.quantity) + tire.quantity;
+    if (tire.condition === "New") {
+      sameTire.price = tire.price;
+    }
     saveTires(location);
     console.log("Merged:", sameTire);
     res.json(sameTire);
@@ -196,11 +207,27 @@ app.put("/api/:location/inventory/:id", function (req, res) {
     return
   }
 
-  tire.brand = req.body.brand;
-  tire.size = req.body.size;
-  tire.quantity = req.body.quantity;
+  tire.brand = String(req.body.brand).trim();
+  tire.size = String(req.body.size).trim();
+  tire.quantity = Number(req.body.quantity);
   tire.condition = req.body.condition;
   tire.price = req.body.price;
+
+  // If the edit makes it the same as another tire, combine them into one
+  let sameTire = findSameTire(inventory[location], tire, id);
+  if (sameTire) {
+    sameTire.quantity = Number(sameTire.quantity) + tire.quantity;
+    if (tire.condition === "New") {
+      sameTire.price = tire.price;
+    }
+    inventory[location] = inventory[location].filter(function (item) {
+      return item.id !== id;
+    });
+    saveTires(location);
+    console.log("Edited and merged:", sameTire);
+    res.json(sameTire);
+    return;
+  }
 
   saveTires(location);
   console.log("Edited:", tire);
