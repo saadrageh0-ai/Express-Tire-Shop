@@ -410,12 +410,15 @@ searchSection.append(searchResults);
 search.addEventListener("input", function () {
   let text = search.value.toLowerCase().trim();
   searchResults.textContent = "";
+
   if (text === "") return;
+  let words = text.split(" ");
 
   for (let tire of inventory) {
-    if (tire.brand.toLowerCase().includes(text) ||
-      tire.size.toLowerCase().includes(text) ||
-      tire.condition.toLowerCase().includes(text)) {
+    let sizeNumbers = tire.size.replace(/[^0-9]/g, "");
+    let allInfo = (tire.brand + " " + tire.size + " " + tire.condition + " " + sizeNumbers).toLowerCase();
+
+    if (words.every(word => allInfo.includes(word))) {
       let list = document.createElement("li");
       list.className = "list";
 
